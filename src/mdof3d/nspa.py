@@ -44,14 +44,14 @@ def _set_algorithm(tol: float, ctrl_node: int, ctrl_dof: int, dincr: float, iter
     return ok
 
 
-def do_nspa_x(max_drift: float = 0.05, dincr: float = 0.001) -> tuple[list[float], list[float]]:
+def do_nspa_x(max_drift: float = 0.1, dincr: float = 0.001) -> tuple[list[float], list[float]]:
     """Performs nonlinear static pushover analysis (NSPA) in x direction.
 
     Parameters
     ----------
     max_drift : float, optional.
         Maximum considered drift value for the control node.
-        By default 0.05
+        By default 0.1
     dincr : float, optional.
         First displacement increment considered during the analysis.
         By default 0.001.
@@ -78,17 +78,15 @@ def do_nspa_x(max_drift: float = 0.05, dincr: float = 0.001) -> tuple[list[float
     ops.timeSeries('Linear', 2)
     ops.pattern('Plain', 2, 2)
     # Add lateral nspa loads to ops domain
-    ops.load(90000001, 0.0728390948371378, 0, 0, 0, 0, 0)
-    ops.load(90000002, 0.14417674312432754, 0, 0, 0, 0, 0)
-    ops.load(90000003, 0.21352703982922347, 0, 0, 0, 0, 0)
-    ops.load(90000004, 0.28334218568173014, 0, 0, 0, 0, 0)
-    ops.load(90000005, 0.2861149365275811, 0, 0, 0, 0, 0)
+    ops.load(90000001, 0.18798107435422332, 0, 0, 0, 0, 0)
+    ops.load(90000002, 0.3740443149663401, 0, 0, 0, 0, 0)
+    ops.load(90000003, 0.4379746106794366, 0, 0, 0, 0, 0)
 
     # Set the recorders
-    ctrl_node = 90000005  # Control node
+    ctrl_node = 90000003  # Control node
     ctrl_dof = 1  # Control dof
-    supports = [80000000, 80000100, 80000200, 80000300, 80010000, 80010100, 80010200, 80010300, 80020000, 80020100, 80020200, 80020300, 80030000, 80030100, 80030200, 80030300, 80040000, 80040100, 80040200, 80040300, 80050000, 80050100, 80050200, 80050300]  # Foundation nodes
-    floors = [90000001, 90000002, 90000003, 90000004, 90000005]  # Retained floor nodes
+    supports = [80000000, 80000100, 80000200, 80010000, 80010100, 80010200, 80020000, 80020100, 80020200, 80030000, 80030100, 80030200]  # Foundation nodes
+    floors = [90000001, 90000002, 90000003]  # Retained floor nodes
     ops.recorder('Node', '-file', disp_file_path, '-node', *floors, '-dof', ctrl_dof, 'disp')
     ops.recorder('Node', '-file', reaction_file_path, '-node', *supports, '-dof', ctrl_dof, 'reaction')
 
@@ -136,7 +134,7 @@ def do_nspa_x(max_drift: float = 0.05, dincr: float = 0.001) -> tuple[list[float
         current_disp = ops.nodeDisp(ctrl_node, ctrl_dof)
         current_shear = abs(sum([ops.nodeReaction(node, ctrl_dof) for node in supports]))
         # Check the base shear limit
-        within_limits = current_shear >= 0.6 * max(base_shear)
+        within_limits = current_shear >= 0.2 * max(base_shear)
         # Set continue flag
         cont = within_limits and current_disp < max_disp
         # Append base shear and control node displacement, including the step reaching max_disp
@@ -150,14 +148,14 @@ def do_nspa_x(max_drift: float = 0.05, dincr: float = 0.001) -> tuple[list[float
     return ctrl_disp, base_shear
 
 
-def do_nspa_y(max_drift: float = 0.05, dincr: float = 0.001) -> tuple[list[float], list[float]]:
+def do_nspa_y(max_drift: float = 0.1, dincr: float = 0.001) -> tuple[list[float], list[float]]:
     """Performs nonlinear static pushover analysis (NSPA) in y direction.
 
     Parameters
     ----------
     max_drift : float, optional.
         Maximum considered drift value for the control node.
-        By default 0.05
+        By default 0.1
     dincr : float, optional.
         First displacement increment considered during the analysis.
         By default 0.001.
@@ -184,17 +182,15 @@ def do_nspa_y(max_drift: float = 0.05, dincr: float = 0.001) -> tuple[list[float
     ops.timeSeries('Linear', 2)
     ops.pattern('Plain', 2, 2)
     # Add lateral nspa loads to ops domain
-    ops.load(90000001, 0, 0.0728390948371378, 0, 0, 0, 0)
-    ops.load(90000002, 0, 0.14417674312432754, 0, 0, 0, 0)
-    ops.load(90000003, 0, 0.21352703982922347, 0, 0, 0, 0)
-    ops.load(90000004, 0, 0.28334218568173014, 0, 0, 0, 0)
-    ops.load(90000005, 0, 0.2861149365275811, 0, 0, 0, 0)
+    ops.load(90000001, 0, 0.18798107435422332, 0, 0, 0, 0)
+    ops.load(90000002, 0, 0.3740443149663401, 0, 0, 0, 0)
+    ops.load(90000003, 0, 0.4379746106794366, 0, 0, 0, 0)
 
     # Set the recorders
-    ctrl_node = 90000005  # Control node
+    ctrl_node = 90000003  # Control node
     ctrl_dof = 2  # Control dof
-    supports = [80000000, 80000100, 80000200, 80000300, 80010000, 80010100, 80010200, 80010300, 80020000, 80020100, 80020200, 80020300, 80030000, 80030100, 80030200, 80030300, 80040000, 80040100, 80040200, 80040300, 80050000, 80050100, 80050200, 80050300]  # Foundation nodes
-    floors = [90000001, 90000002, 90000003, 90000004, 90000005]  # Retained floor nodes
+    supports = [80000000, 80000100, 80000200, 80010000, 80010100, 80010200, 80020000, 80020100, 80020200, 80030000, 80030100, 80030200]  # Foundation nodes
+    floors = [90000001, 90000002, 90000003]  # Retained floor nodes
     ops.recorder('Node', '-file', disp_file_path, '-node', *floors, '-dof', ctrl_dof, 'disp')
     ops.recorder('Node', '-file', reaction_file_path, '-node', *supports, '-dof', ctrl_dof, 'reaction')
 
@@ -242,7 +238,7 @@ def do_nspa_y(max_drift: float = 0.05, dincr: float = 0.001) -> tuple[list[float
         current_disp = ops.nodeDisp(ctrl_node, ctrl_dof)
         current_shear = abs(sum([ops.nodeReaction(node, ctrl_dof) for node in supports]))
         # Check the base shear limit
-        within_limits = current_shear >= 0.6 * max(base_shear)
+        within_limits = current_shear >= 0.2 * max(base_shear)
         # Set continue flag
         cont = within_limits and current_disp < max_disp
         # Append base shear and control node displacement, including the step reaching max_disp

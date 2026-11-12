@@ -30,7 +30,7 @@ def do_modal(num_modes: int = 3) -> dict:
     if not all(1e-06 < value < 1e+300 for value in eigen_values):
         raise RuntimeError(f'Invalid eigenvalues: {eigen_values}')
     # Save eigen vectors for retained floor nodes
-    nodes = [90000001, 90000002, 90000003, 90000004, 90000005]
+    nodes = [90000001, 90000002, 90000003]
     for i in range(1, num_modes+1):
         modal_disps = []
         for node in nodes:
