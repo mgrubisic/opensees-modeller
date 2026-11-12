@@ -11,6 +11,12 @@ from .gm_records import get_ground_motion
 from .utilities import get_build_model
 
 
+def _load_acc(filename):
+    """Load acceleration values, dropping the time column if present"""
+    acc = np.loadtxt(filename)
+    return acc[:, 1] if acc.ndim == 2 else acc
+
+
 class IDA:
     PTAGX = 10
     PTAGY = 20
@@ -359,13 +365,13 @@ class IDA:
             eq_name_y = None
 
             dt_record = dts[rec]
-            accg_x = np.loadtxt(eq_name_x)
+            accg_x = _load_acc(eq_name_x)
             dur = dt_record * (len(accg_x) - 1)
             dur = self.EXTRA_DUR + dur
 
             if gm_2 is not None:
                 eq_name_y = self.gm_folder / gm_2[rec]
-                accg_y = np.loadtxt(eq_name_y)
+                accg_y = _load_acc(eq_name_y)
 
             # Establish the IM
             if self.im_type == 1:
@@ -427,12 +433,12 @@ class IDA:
         eq_name_x = self.gm_folder / gm_1
         eq_name_y = None
         dt_record = dts
-        accg_x = np.loadtxt(eq_name_x)
+        accg_x = _load_acc(eq_name_x)
         dur = dt_record * (len(accg_x) - 1) + self.EXTRA_DUR
 
         if gm_2 is not None:
             eq_name_y = self.gm_folder / gm_2
-            accg_y = np.loadtxt(eq_name_y)
+            accg_y = _load_acc(eq_name_y)
 
         # Establish the IM
         if self.im_type == 1:
