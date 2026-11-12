@@ -37,7 +37,6 @@ except ValueError:
 # Paths
 # --------------------------------------------------
 path = Path(__file__).parent
-results_dir = path / "src" / "mdof3d" / "Modal-Results"  # set in modal.py
 outputs_dir = path / "outputs" / "MA_3D"
 outputs_dir.mkdir(parents=True, exist_ok=True)
 
@@ -46,7 +45,7 @@ outputs_dir.mkdir(parents=True, exist_ok=True)
 # --------------------------------------------------
 num_modes = 3
 # Perform modal analysis
-results = do_modal(num_modes=num_modes)
+results = do_modal(num_modes=num_modes, outsdir=outputs_dir)
 
 # Periods and modal mass ratios [%]
 periods = results["eigenPeriod"]
@@ -71,7 +70,7 @@ for i in range(num_modes):
     # Read the eigenvectors of the ith mode
     # Each row contains: node id, ux, uy, uz, rx, ry, rz
     eigen_vectors = np.loadtxt(
-        results_dir / f"EigenVectors_Mode{i + 1}.txt", delimiter=",",
+        outputs_dir / f"EigenVectors_Mode{i + 1}.txt", delimiter=",",
         ndmin=2)
     # Eigen vectors in X, Y and torsion, with zero at the base
     fis = [np.append(0, eigen_vectors[:, 1]),

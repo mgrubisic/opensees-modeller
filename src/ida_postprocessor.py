@@ -132,9 +132,11 @@ class IDAPostprocessor:
         # Find names of 1st components
         filenames_1 = chain(gm_folder.glob('**/*name*1*'),
                             gm_folder.glob('**/*1*name*'),
+                            gm_folder.glob('**/*names_x*'),
                             gm_folder.glob('**/*filenames_X*'))
         filenames_2 = chain(gm_folder.glob('**/*name*2*'),
                             gm_folder.glob('**/*2*name*'),
+                            gm_folder.glob('**/*names_y*'),
                             gm_folder.glob('**/*filenames_Y*'))
 
         names_1 = None

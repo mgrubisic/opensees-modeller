@@ -1,17 +1,20 @@
 # Import installed packages
+from pathlib import Path
 import numpy as np  # used for array operations
 import matplotlib.pyplot as plt  # used for plotting
 
 # Import the method to run pushover analysis for the RC frame
 from src.mdof2d.model import run_nspa
 
+# Output directory, relative to this script so it works from any working dir
+outputs_dir = Path(__file__).parent / "outputs" / "NSPA"
 
 # Perform Pushover Analyses
-run_nspa(outsdir='outputs\\NSPA')
+run_nspa(outsdir=outputs_dir.as_posix())
 # Read the storey displacements
-disp = np.loadtxt('outputs\\NSPA\\displacement.txt')
+disp = np.loadtxt(outputs_dir / 'displacement.txt')
 # Read the support reactions
-reactions = np.loadtxt('outputs\\NSPA\\reaction.txt')
+reactions = np.loadtxt(outputs_dir / 'reaction.txt')
 # Compute the base shear
 base_shear = np.abs(-np.sum(reactions, axis=1))
 # Get the roof displacements
@@ -20,7 +23,7 @@ roof_disp = disp[:, 2]
 plt.plot(roof_disp, base_shear)
 plt.xlabel('Roof Displacement [m]')
 plt.ylabel('Base Shear [kN]')
-plt.savefig("outputs\\NSPA\\nspa-1.png")
+plt.savefig(outputs_dir / "nspa-1.png")
 plt.show()
 plt.close()
 
@@ -40,7 +43,7 @@ for i in range(4):
 plt.legend()
 plt.ylabel("Base Shear Coefficient [V/W]")
 plt.xlabel("Maximum Interstorey Drift [%]")
-plt.savefig("outputs\\NSPA\\nspa-2.png")  # saves in your remote folder
+plt.savefig(outputs_dir / "nspa-2.png")  # saves in your remote folder
 plt.show()
 plt.close()
 
@@ -64,7 +67,7 @@ for i in range(len(disps_peak) - 1):
 plt.plot(X, Y)
 plt.xlabel('Displacement [m]')
 plt.ylabel('Storey #')
-plt.savefig("outputs\\NSPA\\nspa-3.png")
+plt.savefig(outputs_dir / "nspa-3.png")
 plt.show()
 plt.close()
 
@@ -73,6 +76,6 @@ plt.plot(disps_peak / storey_height * 100, storeys)
 plt.xlabel('Interstorey Drifts [%]')
 plt.ylabel('Storey #')
 plt.plot(np.array(X) / storey_height * 100, Y)
-plt.savefig("outputs\\NSPA\\nspa-4.png")
+plt.savefig(outputs_dir / "nspa-4.png")
 plt.show()
 plt.close()

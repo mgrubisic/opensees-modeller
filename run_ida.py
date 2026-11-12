@@ -7,7 +7,7 @@ path = Path(__file__).parent
 outputs_dir = path / "outputs" / "IDA"
 create_path(outputs_dir)
 
-gmdir = path / "data/IDA-Records"
+gmdir = path / "data/IDA-Records-mdof2d"
 
 gmfilenames = ["names_x.txt", "dts.txt"]
 

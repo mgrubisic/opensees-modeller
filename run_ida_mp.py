@@ -8,7 +8,7 @@ if __name__ == "__main__":
     outputs_dir = path / "outputs" / "IDA"
     create_path(outputs_dir)
 
-    gmdir = path / "data/IDA-Records"
+    gmdir = path / "data/IDA-Records-mdof2d"
 
     gmfilenames = ["names_x.txt", "dts.txt"]
 
@@ -20,7 +20,8 @@ if __name__ == "__main__":
         gm_filenames=gmfilenames,
         dcap=5,
         analysis_time_step=0.005,
-        workers=12,
+        workers=30,
+        max_runs=12
     )
 
     model.modeller()

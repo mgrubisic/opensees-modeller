@@ -49,7 +49,7 @@ def apply_time_series(
     ptagy : int, optional
         Uniform excitation load pattern tag for Y direction, by default 20
     damping_type : str, optional
-        Damping model, by default 'Modal-adjusted'
+        Damping model, by default 'Modal'
             'Rayleigh': mass and last-committed stiffness proportional,
             calibrated at the 1st and 3rd modes
             'Modal': modal damping in all modes in omegas
@@ -143,6 +143,9 @@ class SolutionAlgorithm:
     INTEGRATOR_TYPE = ['TRBDF2']  # dissipates high-frequency response
     # Time step factors tried in descending order when a step fails
     DT_FACTORS = [1.0, 0.5, 0.25, 0.1, 0.01]
+    # Largest storey drift change in a single step [%], a converged step
+    # beyond it is a spurious (diverged) solution, not a physical response
+    DRIFT_JUMP = 5.0
     collapse_index = 0
 
     def __init__(
@@ -407,6 +410,10 @@ class SolutionAlgorithm:
             # Analysis step, if it fails alternative algorithms, smaller time
             # steps and relaxed tolerances are tried
             ok, control_time, dt_cur = self._do_single_analysis_step(dt_cur)
+            # The trial state of a failed step is not a solution, so it is
+            # not recorded (its drifts would be flagged as collapse otherwise)
+            if ok != 0:
+                break
 
             # Recorders
             temp_accel = np.zeros((self.directions, nst + 1, 1))
@@ -442,6 +449,16 @@ class SolutionAlgorithm:
                             temp_res[j, i - 1, 0] = 100.0 * \
                                 abs(temp_disp[j, i, 0]
                                     - temp_disp[j, i - 1, 0]) / cht
+
+            # A spurious solution accepted by the relaxed fallbacks is a
+            # numerical failure, it is not recorded
+            if np.amax(np.abs(temp_drift - drifts[:, :, -1:])) > \
+                    self.DRIFT_JUMP:
+                if self.pflag:
+                    print(f"[FAILURE] Drift jump at {control_time} of "
+                          f"{self.dur} seconds - exit analysis...")
+                self.collapse_index = -1
+                break
 
             # Appending into the global numpy arrays to return
             displacements = np.append(displacements, temp_disp, axis=2)

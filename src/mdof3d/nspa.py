@@ -44,7 +44,7 @@ def _set_algorithm(tol: float, ctrl_node: int, ctrl_dof: int, dincr: float, iter
     return ok
 
 
-def do_nspa_x(max_drift: float = 0.1, dincr: float = 0.001) -> tuple[list[float], list[float]]:
+def do_nspa_x(max_drift: float = 0.1, dincr: float = 0.001, outsdir: str | Path | None = None) -> tuple[list[float], list[float]]:
     """Performs nonlinear static pushover analysis (NSPA) in x direction.
 
     Parameters
@@ -55,6 +55,9 @@ def do_nspa_x(max_drift: float = 0.1, dincr: float = 0.001) -> tuple[list[float]
     dincr : float, optional.
         First displacement increment considered during the analysis.
         By default 0.001.
+    outsdir : str | Path | None, optional.
+        Directory to save the results in.
+        By default None, i.e., NSPA-Results next to this module.
 
     Return
     ------
@@ -64,9 +67,8 @@ def do_nspa_x(max_drift: float = 0.1, dincr: float = 0.001) -> tuple[list[float]
         Base shear value obtained as sum of the reaction forces.
     """
     # Set output directory
-    output_directory = Path(__file__).parent / 'NSPA-Results'
-    if not Path.exists(output_directory):
-        Path.mkdir(output_directory)
+    output_directory = Path(outsdir) if outsdir else Path(__file__).parent / 'NSPA-Results'
+    output_directory.mkdir(parents=True, exist_ok=True)
     reaction_file_path = (output_directory / 'support_reactions_x.out').as_posix()
     disp_file_path = (output_directory / 'storey_displacements_x.out').as_posix()
     storey_heights_file_path = (output_directory / 'storey_heights.out').as_posix()
@@ -148,7 +150,7 @@ def do_nspa_x(max_drift: float = 0.1, dincr: float = 0.001) -> tuple[list[float]
     return ctrl_disp, base_shear
 
 
-def do_nspa_y(max_drift: float = 0.1, dincr: float = 0.001) -> tuple[list[float], list[float]]:
+def do_nspa_y(max_drift: float = 0.1, dincr: float = 0.001, outsdir: str | Path | None = None) -> tuple[list[float], list[float]]:
     """Performs nonlinear static pushover analysis (NSPA) in y direction.
 
     Parameters
@@ -159,6 +161,9 @@ def do_nspa_y(max_drift: float = 0.1, dincr: float = 0.001) -> tuple[list[float]
     dincr : float, optional.
         First displacement increment considered during the analysis.
         By default 0.001.
+    outsdir : str | Path | None, optional.
+        Directory to save the results in.
+        By default None, i.e., NSPA-Results next to this module.
 
     Return
     ------
@@ -168,9 +173,8 @@ def do_nspa_y(max_drift: float = 0.1, dincr: float = 0.001) -> tuple[list[float]
         Base shear value obtained as sum of the reaction forces.
     """
     # Set output directory
-    output_directory = Path(__file__).parent / 'NSPA-Results'
-    if not Path.exists(output_directory):
-        Path.mkdir(output_directory)
+    output_directory = Path(outsdir) if outsdir else Path(__file__).parent / 'NSPA-Results'
+    output_directory.mkdir(parents=True, exist_ok=True)
     reaction_file_path = (output_directory / 'support_reactions_y.out').as_posix()
     disp_file_path = (output_directory / 'storey_displacements_y.out').as_posix()
     storey_heights_file_path = (output_directory / 'storey_heights.out').as_posix()

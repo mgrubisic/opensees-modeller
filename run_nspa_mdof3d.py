@@ -35,7 +35,6 @@ except ValueError:
 # Paths
 # --------------------------------------------------
 path = Path(__file__).parent
-results_dir = path / "src" / "mdof3d" / "NSPA-Results"  # set in nspa.py
 outputs_dir = path / "outputs" / "NSPA_3D"
 outputs_dir.mkdir(parents=True, exist_ok=True)
 
@@ -49,11 +48,11 @@ total_weight = sum(ops.nodeReaction(node, 3) for node in ops.getFixedNodes())
 ops.wipe()
 
 # Perform Pushover Analyses in X and Y
-do_nspa_x()
-do_nspa_y()
+do_nspa_x(outsdir=outputs_dir)
+do_nspa_y(outsdir=outputs_dir)
 
 # Storey heights, i.e., floor levels above the base, and interstorey heights
-floor_levels = np.atleast_1d(np.loadtxt(results_dir / "storey_heights.out"))
+floor_levels = np.atleast_1d(np.loadtxt(outputs_dir / "storey_heights.out"))
 storey_heights = np.diff(np.insert(floor_levels, 0, 0))
 storeys = np.arange(len(floor_levels) + 1)  # storey IDs, 0 is the base
 
@@ -61,9 +60,9 @@ storeys = np.arange(len(floor_levels) + 1)  # storey IDs, 0 is the base
 results = {}
 for d in ["x", "y"]:
     # Floor displacements, each row is a step, each column is a floor
-    disp = np.loadtxt(results_dir / f"storey_displacements_{d}.out", ndmin=2)
+    disp = np.loadtxt(outputs_dir / f"storey_displacements_{d}.out", ndmin=2)
     # Support reactions, each row is a step, each column is a support
-    reactions = np.loadtxt(results_dir / f"support_reactions_{d}.out",
+    reactions = np.loadtxt(outputs_dir / f"support_reactions_{d}.out",
                            ndmin=2)
     # Add the initial (zero) state
     disp = np.vstack([np.zeros(disp.shape[1]), disp])
@@ -95,17 +94,11 @@ ax.legend()
 fig.savefig(outputs_dir / "nspa-1.png", dpi=150, bbox_inches="tight")
 
 # Plot the pushover curves as max. drift vs base shear coeff.
-# Drift thresholds taken from run_nspa_mdof2d.py, revise for this building if needed
-tresholds = [0.4, 1.0, 1.8, 2.6]
 fig, ax = plt.subplots()
 for d, res in results.items():
     max_drifts = np.max(np.abs(res["drifts"]), axis=1)
     ax.plot(max_drifts, res["base_shear"] / total_weight, color=COLORS[d],
             linestyle=LINESTYLES[d], label=f"{d.upper()}-dir")
-for i, tr in enumerate(tresholds):
-    ax.axvline(x=tr, color=ONYX, linestyle=":", linewidth=1, alpha=0.6)
-    ax.text(tr, 1.0, f" DLS-{i + 1}", transform=ax.get_xaxis_transform(),
-            ha="left", va="top", fontsize=8)
 ax.set_xlabel("Maximum Interstorey Drift [%]")
 ax.set_ylabel("Base Shear Coefficient [V/W]")
 ax.legend(loc="lower right")

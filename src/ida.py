@@ -345,8 +345,6 @@ class IDA:
             Raises exception if wrong IM type is provided!
         """
         im_filename = self.output_path / "IM.csv"
-        if im_filename.exists():
-            im_filename = self.output_path / "IM_temp.csv"
 
         # Get the ground motion set information
         gm_1, gm_2, dts = get_ground_motion(self.gm_folder, self.gm_filenames)
@@ -370,12 +368,15 @@ class IDA:
 
             dt_record = dts[rec]
             accg_x = _load_acc(eq_name_x)
-            dur = dt_record * (len(accg_x) - 1)
-            dur = self.EXTRA_DUR + dur
+            npts = len(accg_x)
 
             if gm_2 is not None:
                 eq_name_y = self.gm_folder / gm_2[rec]
                 accg_y = _load_acc(eq_name_y)
+                npts = max(npts, len(accg_y))
+
+            # Duration of the longer component plus free vibration
+            dur = dt_record * (npts - 1) + self.EXTRA_DUR
 
             # Establish the IM
             if self.im_type == 1:
@@ -438,11 +439,15 @@ class IDA:
         eq_name_y = None
         dt_record = dts
         accg_x = _load_acc(eq_name_x)
-        dur = dt_record * (len(accg_x) - 1) + self.EXTRA_DUR
+        npts = len(accg_x)
 
         if gm_2 is not None:
             eq_name_y = self.gm_folder / gm_2
             accg_y = _load_acc(eq_name_y)
+            npts = max(npts, len(accg_y))
+
+        # Duration of the longer component plus free vibration
+        dur = dt_record * (npts - 1) + self.EXTRA_DUR
 
         # Establish the IM
         if self.im_type == 1:
@@ -511,8 +516,6 @@ class IDA:
         """Performs IDA using multiprocessing."""
 
         im_filename = self.output_path / "IM.csv"
-        if im_filename.exists():
-            im_filename = self.output_path / "IM_temp.csv"
 
         # Get the ground motion set information
         gm_1, gm_2, dts = get_ground_motion(self.gm_folder, self.gm_filenames)

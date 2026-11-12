@@ -4,7 +4,7 @@ from pathlib import Path
 from .model import build_model
 
 
-def do_modal(num_modes: int = 3) -> dict:
+def do_modal(num_modes: int = 3, outsdir: str | Path | None = None) -> dict:
     """Perform modal analysis for built OpenSees model.
 
     Parameters
@@ -12,6 +12,9 @@ def do_modal(num_modes: int = 3) -> dict:
     num_modes : int, optional
         Number of modes considered for modal analysis.
         By default 3.
+    outsdir : str | Path | None, optional
+        Directory to save the results in.
+        By default None, i.e., Modal-Results next to this module.
 
     Return
     ------
@@ -19,9 +22,8 @@ def do_modal(num_modes: int = 3) -> dict:
         Dictionary containing modal properties.
     """
     # Set output directory
-    output_directory = Path(__file__).parent / 'Modal-Results'
-    if not Path.exists(output_directory):
-        Path.mkdir(output_directory)
+    output_directory = Path(outsdir) if outsdir else Path(__file__).parent / 'Modal-Results'
+    output_directory.mkdir(parents=True, exist_ok=True)
     # Build the numerical model
     build_model()
 
