@@ -458,11 +458,13 @@ class SolutionAlgorithm:
 
         if self.collapse_index == -1:
             print(f"[FAILURE] Analysis failed to converge at {control_time}"
-                  f" of {self.dur}.")
+                  f" of {self.dur}, MIDR = {mdrift_init:.2f}%.")
         if self.collapse_index == 0:
-            print('[SUCCESS] Analysis completed successfully.')
+            print('[SUCCESS] Analysis completed successfully, '
+                  f'MIDR = {mdrift_init:.2f}%.')
         if self.collapse_index == 1:
-            print('[FAILURE] Local structure collapse.')
+            print(f'[FAILURE] Local structure collapse, '
+                  f'MIDR = {mdrift_init:.2f}%.')
 
         return (accelerations, displacements, drifts, residuals,
                 self.collapse_index)

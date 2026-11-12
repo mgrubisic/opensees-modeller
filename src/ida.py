@@ -136,6 +136,10 @@ class IDA:
         sf_x = round(im[j - 1] / im_geomean * self.g, 3)
         sf_y = round(im[j - 1] / im_geomean * self.g, 3)
 
+        # Log the OpenSees messages of this run to a file
+        op.logFile(str(output_path / f"Record{rec + 1}_Run{j}.log"),
+                   '-noEcho')
+
         # The hunting intensity has been determined, now analysis commences
         self._call_model()
         apply_time_series(dt_record, eq_name_x, eq_name_y, sf_x, sf_y,

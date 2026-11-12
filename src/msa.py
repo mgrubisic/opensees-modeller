@@ -130,6 +130,11 @@ class MSA:
             else:
                 analysis_time_step = self.analysis_time_step
 
+            # Log the OpenSees messages of this record to a file
+            (self.output_path / name).mkdir(parents=True, exist_ok=True)
+            op.logFile(str(self.output_path / name / f"Record{rec + 1}.log"),
+                       '-noEcho')
+
             # Create the model
             self._call_model()
 
