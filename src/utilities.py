@@ -5,6 +5,7 @@ from scipy import stats
 from scipy.interpolate import interp1d
 from scipy.optimize import minimize
 import ast
+import importlib
 from pathlib import Path
 import warnings
 
@@ -310,18 +311,99 @@ def cdf_lognormal_norm(xs, median: float, beta: float) -> np.ndarray:
     return prob
 
 
-def extract_tnodes_bnodes():
+MODELS = ("mdof2d", "mdof3d")
+
+
+def _check_model(model: str) -> str:
+    """Validates the name of the numerical model
+
+    Parameters
+    ----------
+    model : str
+        Name of the numerical model, i.e., 'mdof2d' or 'mdof3d'
+
+    Returns
+    -------
+    str
+        Name of the numerical model in lower case
     """
-    Extracts 'tnodes' and 'bnodes'
+    model = model.lower()
+    if model not in MODELS:
+        raise ValueError(f"Unknown model '{model}', must be one of {MODELS}")
+    if not (Path(__file__).parent / model).is_dir():
+        raise FileNotFoundError(
+            f"Model package 'src/{model}' does not exist")
+    return model
+
+
+def get_build_model(model: str = "mdof2d"):
+    """Gets the function that adds the requested numerical model to the
+    OpenSees domain. The model package is imported only when requested.
+
+    Parameters
+    ----------
+    model : str, optional
+        Name of the numerical model, 'mdof2d' or 'mdof3d', by default 'mdof2d'
+
+    Returns
+    -------
+    Callable
+        build_model function of the requested numerical model
+    """
+    model = _check_model(model)
+    module = importlib.import_module(f".{model}.model", package=__package__)
+    return module.build_model
+
+
+def extract_tnodes_bnodes(model: str = "mdof2d"):
+    """
+    Extracts 'tnodes' and 'bnodes' of the requested numerical model.
+    For 'mdof3d', they are obtained by searching for 'supports' and 'floors'
+    in the mdof3d/nspa.py file.
 
     Parameters:
     ----------
+    model : str, optional
+        Name of the numerical model, 'mdof2d' or 'mdof3d', by default 'mdof2d'
 
     Returns:
     -------
     tuple
         A tuple containing 'tnodes' and 'bnodes'.
     """
-    tnodes = [[1111, 1112, 1113], [1111, 1112, 1113]]
-    bnodes = [[1110, 1111, 1112], [1110, 1111, 1112]]
-    return tnodes, bnodes
+    model = _check_model(model)
+
+    if model == "mdof2d":
+        tnodes = [[1111, 1112, 1113], [1111, 1112, 1113]]
+        bnodes = [[1110, 1111, 1112], [1110, 1111, 1112]]
+        return tnodes, bnodes
+
+    file_path = Path(__file__).parent / model / "nspa.py"
+
+    # Parse the file
+    with open(file_path, 'r') as file:
+        tree = ast.parse(file.read())
+
+    supports, floors = None, None
+
+    # Iterate through assignment nodes in the file
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    if target.id == "supports":
+                        supports = ast.literal_eval(node.value)
+                    elif target.id == "floors":
+                        floors = ast.literal_eval(node.value)
+
+        # Stop searching if both are found
+        if supports and floors:
+            break
+
+    # Compute tnodes and bnodes if supports and floors are found
+    if supports and floors:
+        tnodes = [floors, floors]
+        bnodes = [[supports[0]] + floors[:-1], [supports[0]] + floors[:-1]]
+        return tnodes, bnodes
+
+    raise ValueError(f"Supports or Floors not found in {file_path}.")

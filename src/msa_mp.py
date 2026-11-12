@@ -19,6 +19,7 @@ class MSA_MP:
         omegas=None,
         bnode=None,
         tnode=None,
+        model: str = "mdof2d",
     ) -> None:
         self.analysis_options = analysis_options
         self.export_dir = export_dir
@@ -32,6 +33,7 @@ class MSA_MP:
         self.omegas = omegas
         self.bnode = bnode
         self.tnode = tnode
+        self.model = model
 
     def start(self, records, workers=0):
         """
@@ -63,6 +65,7 @@ class MSA_MP:
             analysis_time_step=self.analysis_time_step,
             bnode=self.bnode,
             tnode=self.tnode,
+            model=self.model,
         )
         msa.use_multiprocess = True
 

@@ -9,9 +9,8 @@ from .msa import MSA
 from .ida import IDA
 
 from .utilities import (create_path, export_results,
-                        extract_tnodes_bnodes)
+                        extract_tnodes_bnodes, get_build_model)
 from .gm_records import get_records
-from .mdof2d.model import build_model
 
 
 class RCMRF:
@@ -35,7 +34,8 @@ class RCMRF:
         dcap: float = 10.,
         sa_avg_bounds=[0, 2],
         max_runs=10,
-        workers=None
+        workers=None,
+        model: str = "mdof2d",
     ) -> None:
         """Initialize RCMRF modeller
 
@@ -78,6 +78,10 @@ class RCMRF:
         workers : int, optional
             Number of workers to use in if it is desired to run IDA
             with multiple-processors, by default None.
+        model : str, optional
+            Numerical model to analyse, by default 'mdof2d'
+                'mdof2d' - 2D frame model in src/mdof2d
+                'mdof3d' - 3D building model in src/mdof3d
         """
 
         self.analysis_options = analysis_options
@@ -90,8 +94,9 @@ class RCMRF:
         self.sa_avg_bounds = sa_avg_bounds
         self.max_runs = max_runs
         self.workers = workers
+        self.model = model
 
-        tnode, bnode = extract_tnodes_bnodes()
+        tnode, bnode = extract_tnodes_bnodes(self.model)
         self.bnode = bnode
         self.tnode = tnode
 
@@ -114,7 +119,7 @@ class RCMRF:
 
     def _build_model(self):
         # Build the model
-        build_model()
+        get_build_model(self.model)()
 
     def modeller(
         self,
@@ -192,7 +197,7 @@ class RCMRF:
         period_cond = 2 * pi / asarray(omegas)
 
         ida = IDA(
-            self.rcmrf,
+            self.model,
             self.gm_folder,
             self.export_dir,
             self.gm_filenames,
@@ -249,6 +254,7 @@ class RCMRF:
             analysis_time_step=self.analysis_time_step,
             bnode=self.bnode,
             tnode=self.tnode,
+            model=self.model,
         )
 
         for batch in list(records.items()):

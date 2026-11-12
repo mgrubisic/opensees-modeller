@@ -8,7 +8,7 @@ import multiprocessing as mp
 from .intensity_measure import IntensityMeasure
 from .solution_algorithm import SolutionAlgorithm, apply_time_series
 from .gm_records import get_ground_motion
-from .mdof2d.model import build_model
+from .utilities import get_build_model
 
 
 class IDA:
@@ -26,7 +26,7 @@ class IDA:
 
     def __init__(
         self,
-        model,
+        model: str,
         gm_folder: Path,
         output_path: Path,
         gm_filenames: List[Union[Path, str]],
@@ -49,8 +49,9 @@ class IDA:
 
         Parameters
         ----------
-        model : NonlinearModel
-            Nonlinear model object
+        model : str
+            Numerical model to analyse, 'mdof2d' or 'mdof3d',
+            if None, defaults to 'mdof2d'
         gm_folder : Path
             Folder containing the ground motion files
         output_path : Path
@@ -97,7 +98,7 @@ class IDA:
         if output_path is None:
             raise ValueError("You must provide output_path for IDA outputs")
 
-        self.nonlinear_model = model
+        self.model = model if model is not None else "mdof2d"
         self.gm_folder = gm_folder
         self.output_path = output_path
         self.gm_filenames = gm_filenames
@@ -119,7 +120,7 @@ class IDA:
         if not generate_model:
             return
 
-        build_model()
+        get_build_model(self.model)()
 
     def _select_htf_step(
         self, im, im_geomean, rec, j, dt_record, eq_name_x,

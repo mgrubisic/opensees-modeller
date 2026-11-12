@@ -5,8 +5,8 @@ import openseespy.opensees as op
 import numpy as np
 
 from .solution_algorithm import SolutionAlgorithm, apply_time_series
-from .utilities import append_record, extract_tnodes_bnodes
-from .mdof2d.model import build_model
+from .utilities import (append_record, extract_tnodes_bnodes,
+                        get_build_model)
 
 
 class MSA:
@@ -31,13 +31,12 @@ class MSA:
         export_at_each_step: bool = True,
         bnode: List = None,
         tnode: List = None,
+        model: str = "mdof2d",
     ) -> None:
         """Multiple Stripe Analysis (MSA)
 
         Parameters
         ----------
-        model : NonlinearModel
-            Nonlinear model object
         gm_folder : Path
             Folder containing the ground motion files
         output_path : Path
@@ -54,7 +53,11 @@ class MSA:
             If None, will default to ground motion record time step, i.e., dt
         export_at_each_step : bool, optional
             Export time history results at each step of IDA, by default True
+        model : str, optional
+            Numerical model to analyse, 'mdof2d' or 'mdof3d',
+            by default 'mdof2d'
         """
+        self.model = model
         self.gm_folder = gm_folder
         self.output_path = output_path
         self.damping = damping
@@ -64,7 +67,7 @@ class MSA:
         self.export_at_each_step = export_at_each_step
 
         if tnode is None and bnode is None:
-            tnode, bnode = extract_tnodes_bnodes()
+            tnode, bnode = extract_tnodes_bnodes(self.model)
         self.bnode = bnode
         self.tnode = tnode
 
@@ -72,7 +75,7 @@ class MSA:
         if not generate_model:
             return
 
-        build_model()
+        get_build_model(self.model)()
 
     def analyze(self, batch) -> None:
         """Performs MSA
